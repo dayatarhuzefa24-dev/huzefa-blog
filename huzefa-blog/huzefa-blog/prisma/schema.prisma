@@ -1,0 +1,40 @@
+// Prisma schema for the blog of Huzefa Dayatar. Works with Vercel Postgres (Neon) —
+// the Vercel integration provides DATABASE_URL (pooled) and DATABASE_URL_UNPOOLED.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model Post {
+  id         String @id @default(cuid())
+  slug       String @unique
+  title      String
+  coverImage String
+  category   String
+  /// Markdown body
+  content    String @db.Text
+
+  // ── AI-generated SEO package ────────────────────────────
+  seoTitle       String
+  seoDescription String
+  keywords       String[]
+  /// Complete NewsArticle JSON-LD object
+  jsonLd         Json
+
+  // ── Engagement ──────────────────────────────────────────
+  views Int @default(0)
+  likes Int @default(0)
+
+  publishedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@index([category, publishedAt])
+  @@index([views])
+}
