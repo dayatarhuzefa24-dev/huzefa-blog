@@ -1,0 +1,68 @@
+// Prisma schema for the blog of Huzefa Dayatar. Works with Vercel Postgres (Neon) —
+// the Vercel integration provides DATABASE_URL (pooled) and DATABASE_URL_UNPOOLED.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model Post {
+  id         String @id @default(cuid())
+  slug       String @unique
+  title      String
+  coverImage String
+  /// Category NAME (renaming a category updates this column on every post)
+  category   String
+  /// Markdown body
+  content    String @db.Text
+
+  // ── SEO package (AI-generated, or typed by hand in manual mode) ──
+  seoTitle       String
+  seoDescription String
+  /// Tags / keywords. Tags typed by the author are always kept, also in AI mode.
+  keywords       String[]
+  /// Complete NewsArticle JSON-LD object
+  jsonLd         Json
+  /// Where the SEO fields came from: "ai" | "manual" | "auto" (draft, not generated yet)
+  seoSource      String @default("ai")
+
+  // ── Publishing ──────────────────────────────────────────
+  /// "draft" | "published". A published post with a FUTURE publishedAt is "scheduled".
+  status   String  @default("published")
+  featured Boolean @default(false)
+
+  // ── Engagement ──────────────────────────────────────────
+  views Int @default(0)
+  likes Int @default(0)
+
+  publishedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@index([status, publishedAt])
+  @@index([category, publishedAt])
+  @@index([views])
+}
+
+/// Editable list of sections shown in the menu, footer and the editor.
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String   @default("")
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+/// Images uploaded from the admin panel (served at /api/img/<id>).
+model Image {
+  id          String   @id
+  data        Bytes
+  contentType String
+  size        Int
+  createdAt   DateTime @default(now())
+}
