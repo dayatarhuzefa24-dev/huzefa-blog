@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-/** Thin red bar under the header showing how far through #article-body the reader is. */
+/** Thin yellow bar under the header showing how far through #article-body the reader is. */
 export default function ReadingProgress() {
   const [progress, setProgress] = useState(0);
 
@@ -31,7 +31,7 @@ export default function ReadingProgress() {
       aria-valuenow={Math.round(progress)}
       className="fixed inset-x-0 top-0 z-50 h-1 bg-transparent"
     >
-      <div className="h-full bg-red-600 transition-[width] duration-100" style={{ width: `${progress}%` }} />
+      <div className="h-full bg-taxi transition-[width] duration-100" style={{ width: `${progress}%` }} />
     </div>
   );
 }

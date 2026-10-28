@@ -43,9 +43,9 @@ export default async function TagPage({ params, searchParams }: Props) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: `#${tag}` }]} />
-      <h1 className="mb-6 border-b-2 border-red-600 pb-2 text-3xl font-black tracking-tight">#{tag}</h1>
+      <div className="mb-8 border-t-4 border-text pt-4"><h1 className="display text-5xl">#{tag}</h1></div>
       {posts.length === 0 ? (
-        <p className="text-zinc-500">No stories with this tag yet.</p>
+        <p className="text-muted">No stories with this tag yet.</p>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((p) => (

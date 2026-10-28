@@ -16,16 +16,25 @@ model Post {
   slug       String @unique
   title      String
   coverImage String
+  /// Category NAME (renaming a category updates this column on every post)
   category   String
   /// Markdown body
   content    String @db.Text
 
-  // ── AI-generated SEO package ────────────────────────────
+  // ── SEO package (AI-generated, or typed by hand in manual mode) ──
   seoTitle       String
   seoDescription String
+  /// Tags / keywords. Tags typed by the author are always kept, also in AI mode.
   keywords       String[]
   /// Complete NewsArticle JSON-LD object
   jsonLd         Json
+  /// Where the SEO fields came from: "ai" | "manual" | "auto" (draft, not generated yet)
+  seoSource      String @default("ai")
+
+  // ── Publishing ──────────────────────────────────────────
+  /// "draft" | "published". A published post with a FUTURE publishedAt is "scheduled".
+  status   String  @default("published")
+  featured Boolean @default(false)
 
   // ── Engagement ──────────────────────────────────────────
   views Int @default(0)
@@ -34,7 +43,54 @@ model Post {
   publishedAt DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  comments Comment[]
+
   @@index([publishedAt])
+  @@index([status, publishedAt])
   @@index([category, publishedAt])
   @@index([views])
+}
+
+/// Editable list of sections shown in the menu, footer and the editor.
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String   @default("")
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+/// Images uploaded from the admin panel (served at /api/img/<id>).
+model Image {
+  id          String   @id
+  /// Original file name, shown in the media library.
+  name        String   @default("")
+  data        Bytes
+  contentType String
+  size        Int
+  createdAt   DateTime @default(now())
+}
+
+/// Reader comments. They stay "pending" until approved in /admin/comments.
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  name      String
+  email     String   @default("")
+  body      String
+  /// "pending" | "approved" | "spam"
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+
+  @@index([postId, status, createdAt])
+  @@index([status, createdAt])
+}
+
+/// Newsletter sign-ups.
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String   @default("site")
+  createdAt DateTime @default(now())
 }

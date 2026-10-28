@@ -12,25 +12,23 @@ export type CardPost = {
   likes: number;
 };
 
-function Meta({ post }: { post: CardPost }) {
+function Meta({ post, className = "" }: { post: CardPost; className?: string }) {
   return (
-    <p className="flex flex-wrap items-center gap-x-2 text-xs text-zinc-500">
+    <p className={`flex flex-wrap items-center gap-x-3 text-[0.8rem] text-muted ${className}`}>
       <time dateTime={post.publishedAt.toISOString()}>{formatDate(post.publishedAt)}</time>
-      <span aria-hidden>·</span>
       <span>{formatCount(post.views)} views</span>
-      {post.likes > 0 && (
-        <>
-          <span aria-hidden>·</span>
-          <span>{formatCount(post.likes)} likes</span>
-        </>
-      )}
     </p>
   );
 }
 
-function CategoryTag({ category }: { category: string }) {
+/** Category name with a small yellow square — the square marks "section" across the whole site. */
+function CategoryTag({ category, onDark = false }: { category: string; onDark?: boolean }) {
   return (
-    <Link href={categoryHref(category)} className="text-xs font-bold uppercase tracking-wide text-red-600 hover:underline">
+    <Link
+      href={categoryHref(category)}
+      className={`inline-flex items-center gap-2 text-sm font-bold ${onDark ? "text-white" : "text-text"} hover:underline decoration-taxi decoration-2 underline-offset-4`}
+    >
+      <span aria-hidden className="h-2.5 w-2.5 bg-taxi" />
       {category}
     </Link>
   );
@@ -44,35 +42,35 @@ export default function PostCard({
   priority = false,
 }: {
   post: CardPost;
-  variant?: "hero" | "default" | "compact";
+  variant?: "hero" | "default" | "compact" | "wide" | "text";
   priority?: boolean;
 }) {
   const href = `/blog/${post.slug}`;
 
   if (variant === "hero") {
+    // Big picture, with a black block laid over its lower-left corner carrying the headline.
     return (
-      <article className="group relative overflow-hidden rounded-lg bg-zinc-900">
-        <Link href={href} className="block">
+      <article className="group relative">
+        <Link href={href} className="block overflow-hidden bg-soft" tabIndex={-1} aria-hidden>
           <img
             src={post.coverImage}
-            alt={post.title}
+            alt=""
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
-            className="aspect-[16/10] w-full object-cover opacity-90 transition group-hover:scale-[1.02] group-hover:opacity-100 sm:aspect-[16/9]"
+            className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.03] sm:aspect-[16/10]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
         </Link>
-        <div className="absolute inset-x-0 bottom-0 space-y-2 p-4 text-white sm:p-6">
-          <span className="inline-block rounded bg-red-600 px-2 py-0.5 text-xs font-bold uppercase tracking-wide">
-            {post.category}
-          </span>
-          <h2 className="text-xl font-bold leading-tight sm:text-3xl">
-            <Link href={href} className="hover:underline">{post.title}</Link>
+        <div className="relative -mt-14 mr-0 bg-ink p-5 text-white sm:-mt-24 sm:mr-12 sm:p-7 lg:mr-20">
+          <CategoryTag category={post.category} onDark />
+          <h2 className="display mt-3 text-[1.7rem] sm:text-4xl lg:text-[2.7rem]">
+            <Link href={href}>
+              <span className="group-hover:text-taxi transition-colors">{post.title}</span>
+            </Link>
           </h2>
-          <p className="hidden max-w-2xl text-sm text-zinc-200 sm:block">{post.seoDescription}</p>
-          <p className="text-xs text-zinc-300">
-            {formatDate(post.publishedAt)} · {formatCount(post.views)} views
+          <p className="mt-3 hidden max-w-xl font-[family-name:var(--font-body)] text-base leading-relaxed text-white/75 sm:line-clamp-2 sm:block">
+            {post.seoDescription}
           </p>
+          <Meta post={post} className="mt-4 !text-white/60" />
         </div>
       </article>
     );
@@ -80,15 +78,44 @@ export default function PostCard({
 
   if (variant === "compact") {
     return (
-      <article className="flex gap-3">
-        <Link href={href} className="block h-16 w-24 shrink-0 overflow-hidden rounded bg-zinc-100">
-          <img src={post.coverImage} alt="" loading="lazy" className="h-full w-full object-cover" />
+      <article className="group flex gap-4">
+        <Link href={href} className="block h-20 w-28 shrink-0 overflow-hidden bg-soft" tabIndex={-1} aria-hidden>
+          <img src={post.coverImage} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
         </Link>
         <div className="min-w-0 space-y-1">
           <CategoryTag category={post.category} />
-          <h3 className="line-clamp-2 text-sm font-semibold leading-snug">
-            <Link href={href} className="hover:underline">{post.title}</Link>
+          <h3 className="line-clamp-3 text-[1.02rem] font-bold leading-snug">
+            <Link href={href}><span className="hl">{post.title}</span></Link>
           </h3>
+          <Meta post={post} />
+        </div>
+      </article>
+    );
+  }
+
+  if (variant === "text") {
+    return (
+      <article className="group border-t border-line py-4">
+        <h3 className="text-lg font-bold leading-snug">
+          <Link href={href}><span className="hl">{post.title}</span></Link>
+        </h3>
+        <Meta post={post} className="mt-1.5" />
+      </article>
+    );
+  }
+
+  if (variant === "wide") {
+    return (
+      <article className="group grid gap-5 sm:grid-cols-[1.15fr_1fr]">
+        <Link href={href} className="block overflow-hidden bg-soft" tabIndex={-1} aria-hidden>
+          <img src={post.coverImage} alt="" loading="lazy" className="aspect-[4/3] h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+        </Link>
+        <div className="flex flex-col justify-center gap-2.5">
+          <CategoryTag category={post.category} />
+          <h3 className="display text-2xl sm:text-[1.9rem]">
+            <Link href={href}><span className="hl">{post.title}</span></Link>
+          </h3>
+          <p className="line-clamp-3 font-[family-name:var(--font-body)] text-base leading-relaxed text-muted">{post.seoDescription}</p>
           <Meta post={post} />
         </div>
       </article>
@@ -97,20 +124,20 @@ export default function PostCard({
 
   return (
     <article className="group flex h-full flex-col">
-      <Link href={href} className="block aspect-video overflow-hidden rounded-lg bg-zinc-100">
+      <Link href={href} className="block aspect-[3/2] overflow-hidden bg-soft" tabIndex={-1} aria-hidden>
         <img
           src={post.coverImage}
-          alt={post.title}
+          alt=""
           loading="lazy"
-          className="h-full w-full object-cover transition group-hover:scale-105"
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
       </Link>
-      <div className="mt-3 flex flex-1 flex-col gap-1.5">
+      <div className="mt-3.5 flex flex-1 flex-col gap-2">
         <CategoryTag category={post.category} />
-        <h3 className="text-lg font-bold leading-snug">
-          <Link href={href} className="hover:underline">{post.title}</Link>
+        <h3 className="text-[1.3rem] font-extrabold leading-[1.18] tracking-tight">
+          <Link href={href}><span className="hl">{post.title}</span></Link>
         </h3>
-        <p className="line-clamp-2 text-sm text-zinc-600">{post.seoDescription}</p>
+        <p className="line-clamp-2 font-[family-name:var(--font-body)] text-[0.95rem] leading-relaxed text-muted">{post.seoDescription}</p>
         <div className="mt-auto pt-1">
           <Meta post={post} />
         </div>

@@ -18,20 +18,20 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-4 text-3xl font-black uppercase tracking-tight">Search</h1>
-      <SearchBox defaultValue={query} />
+      <div className="mb-5 border-t-4 border-text pt-4"><h1 className="display text-5xl">Search</h1></div>
+      <SearchBox defaultValue={query} tone="light" id="page-search" />
 
       <div className="mt-8">
         {query.length < 2 ? (
-          <p className="text-zinc-500">Type at least two characters to search.</p>
+          <p className="text-muted">Type at least two characters to search.</p>
         ) : results.length === 0 ? (
-          <p className="text-zinc-500">No stories found for “{query}”.</p>
+          <p className="text-muted">No stories found for “{query}”.</p>
         ) : (
           <>
-            <p className="mb-4 text-sm text-zinc-500">
+            <p className="mb-4 text-sm text-muted">
               {results.length} result{results.length === 1 ? "" : "s"} for “{query}”
             </p>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
               {results.map((p) => (
                 <PostCard key={p.slug} post={p} />
               ))}

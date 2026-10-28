@@ -4,15 +4,15 @@ import type { Heading } from "@/lib/markdown";
 export default function TableOfContents({ headings }: { headings: Heading[] }) {
   if (headings.length < 3) return null;
   return (
-    <nav aria-label="In this story" className="my-6 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+    <nav aria-label="In this story" className="my-6 border-l-4 border-taxi bg-surface p-4">
       <details open>
-        <summary className="cursor-pointer text-sm font-bold uppercase tracking-wide text-zinc-800">
+        <summary className="cursor-pointer text-base font-bold">
           In this story
         </summary>
         <ol className="mt-3 space-y-1.5 text-sm">
           {headings.map((h) => (
             <li key={h.id} className={h.level === 3 ? "ml-4" : ""}>
-              <a href={`#${h.id}`} className="text-zinc-700 hover:text-red-600 hover:underline">
+              <a href={`#${h.id}`} className="text-muted hover:text-text hover:underline decoration-taxi decoration-2 underline-offset-4">
                 {h.text}
               </a>
             </li>

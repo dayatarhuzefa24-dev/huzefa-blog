@@ -25,6 +25,11 @@ export const SITE_URL = (
     : "http://localhost:3000")
 ).replace(/\/$/, "");
 
+/**
+ * DEFAULT categories. The live list is stored in the database and edited at
+ * /admin/categories; this list is only the starting set and the fallback used
+ * if the database table is not available.
+ */
 export const CATEGORIES = [
   "Tech",
   "AI",
@@ -34,11 +39,15 @@ export const CATEGORIES = [
   "Bollywood",
 ] as const;
 
-export type Category = (typeof CATEGORIES)[number];
-
 export const categorySlug = (c: string) => slugify(c);
-export const categoryFromSlug = (slug: string) => CATEGORIES.find((c) => slugify(c) === slug);
+/** A category's page address is always derived from its name. */
 export const categoryHref = (c: string) => `/category/${slugify(c)}`;
+
+/** "/api/img/abc" -> "https://yourdomain.com/api/img/abc"; full URLs are returned unchanged. */
+export function absoluteUrl(pathOrUrl: string): string {
+  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+  return `${SITE_URL}${pathOrUrl.startsWith("/") ? "" : "/"}${pathOrUrl}`;
+}
 
 const IST = "Asia/Kolkata";
 

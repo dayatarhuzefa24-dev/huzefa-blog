@@ -47,8 +47,8 @@ export default function LikeButton({
       onClick={toggle}
       aria-pressed={liked}
       aria-label={liked ? "Unlike this story" : "Like this story"}
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition ${
-        liked ? "border-red-600 bg-red-50 text-red-600" : "border-zinc-300 text-zinc-700 hover:border-red-600 hover:text-red-600"
+      className={`inline-flex items-center gap-1.5 border px-3 py-1.5 text-sm font-semibold transition ${
+        liked ? "border-signal text-signal" : "border-line text-text hover:border-ink hover:bg-taxi hover:text-ink"
       }`}
     >
       <svg viewBox="0 0 24 24" className="h-4 w-4" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" aria-hidden>

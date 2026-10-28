@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 
 /** Lightweight shape used by every card/list — never loads the full article body. */
@@ -12,9 +13,18 @@ export const cardSelect = {
   likes: true,
 } as const;
 
+/**
+ * Only posts the public may see: published, and the publish time has arrived.
+ * (Drafts and scheduled posts are excluded everywhere on the public site.)
+ */
+export function liveWhere(): Prisma.PostWhereInput {
+  return { status: "published", publishedAt: { lte: new Date() } };
+}
+
 export function getLatest(opts: { take: number; skip?: number; category?: string; excludeSlugs?: string[] }) {
   return prisma.post.findMany({
     where: {
+      ...liveWhere(),
       ...(opts.category ? { category: opts.category } : {}),
       ...(opts.excludeSlugs?.length ? { slug: { notIn: opts.excludeSlugs } } : {}),
     },
@@ -25,9 +35,19 @@ export function getLatest(opts: { take: number; skip?: number; category?: string
   });
 }
 
+/** The newest post the author marked as featured (used as the homepage lead story). */
+export function getFeatured() {
+  return prisma.post.findFirst({
+    where: { ...liveWhere(), featured: true },
+    orderBy: { publishedAt: "desc" },
+    select: cardSelect,
+  });
+}
+
 export function countPosts(where?: { category?: string; keyword?: string }) {
   return prisma.post.count({
     where: {
+      ...liveWhere(),
       ...(where?.category ? { category: where.category } : {}),
       ...(where?.keyword ? { keywords: { has: where.keyword } } : {}),
     },
@@ -36,7 +56,7 @@ export function countPosts(where?: { category?: string; keyword?: string }) {
 
 export function getMostRead(take = 5, excludeSlug?: string) {
   return prisma.post.findMany({
-    where: excludeSlug ? { slug: { not: excludeSlug } } : undefined,
+    where: { ...liveWhere(), ...(excludeSlug ? { slug: { not: excludeSlug } } : {}) },
     orderBy: [{ views: "desc" }, { publishedAt: "desc" }],
     take,
     select: cardSelect,
@@ -45,7 +65,7 @@ export function getMostRead(take = 5, excludeSlug?: string) {
 
 export function getRelated(post: { slug: string; category: string }, take = 3) {
   return prisma.post.findMany({
-    where: { category: post.category, slug: { not: post.slug } },
+    where: { ...liveWhere(), category: post.category, slug: { not: post.slug } },
     orderBy: { publishedAt: "desc" },
     take,
     select: cardSelect,
@@ -53,14 +73,15 @@ export function getRelated(post: { slug: string; category: string }, take = 3) {
 }
 
 export async function getAdjacent(publishedAt: Date) {
+  const live = liveWhere();
   const [newer, older] = await Promise.all([
     prisma.post.findFirst({
-      where: { publishedAt: { gt: publishedAt } },
+      where: { ...live, publishedAt: { gt: publishedAt, lte: new Date() } },
       orderBy: { publishedAt: "asc" },
       select: { slug: true, title: true },
     }),
     prisma.post.findFirst({
-      where: { publishedAt: { lt: publishedAt } },
+      where: { ...live, publishedAt: { lt: publishedAt } },
       orderBy: { publishedAt: "desc" },
       select: { slug: true, title: true },
     }),
@@ -70,7 +91,7 @@ export async function getAdjacent(publishedAt: Date) {
 
 export function getByKeyword(keyword: string, take: number, skip = 0) {
   return prisma.post.findMany({
-    where: { keywords: { has: keyword } },
+    where: { ...liveWhere(), keywords: { has: keyword } },
     orderBy: { publishedAt: "desc" },
     take,
     skip,
@@ -81,7 +102,7 @@ export function getByKeyword(keyword: string, take: number, skip = 0) {
 export function searchPosts(q: string, take = 20) {
   const contains = { contains: q, mode: "insensitive" as const };
   return prisma.post.findMany({
-    where: { OR: [{ title: contains }, { seoDescription: contains }, { content: contains }] },
+    where: { ...liveWhere(), OR: [{ title: contains }, { seoDescription: contains }, { content: contains }] },
     orderBy: { publishedAt: "desc" },
     take,
     select: cardSelect,

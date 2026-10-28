@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { AUTHOR_NAME, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { liveWhere } from "@/lib/queries";
+import { AUTHOR_NAME, SITE_DESCRIPTION, SITE_NAME, SITE_URL, absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,10 @@ const esc = (s: string) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
 
-// RSS 2.0 feed of the 20 newest posts — submit this URL in Google Publisher Center.
+// RSS 2.0 feed of the 20 newest live posts — submit this URL in Google Publisher Center.
 export async function GET() {
   const posts = await prisma.post.findMany({
+    where: liveWhere(), // drafts and scheduled posts are never included
     orderBy: { publishedAt: "desc" },
     take: 20,
     select: {
@@ -40,7 +42,7 @@ export async function GET() {
         .map((k) => `\n      <category>${esc(k)}</category>`)
         .join("")}
       <description>${esc(p.seoDescription)}</description>
-      <media:content url="${esc(p.coverImage)}" medium="image" />
+      <media:content url="${esc(absoluteUrl(p.coverImage))}" medium="image" />
     </item>`;
     })
     .join("\n");

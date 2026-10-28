@@ -1,18 +1,24 @@
 import type { MetadataRoute } from "next";
+import { getCategories } from "@/lib/categories";
 import { prisma } from "@/lib/prisma";
-import { CATEGORIES, SITE_URL, categoryHref } from "@/lib/site";
+import { liveWhere } from "@/lib/queries";
+import { SITE_URL, categoryHref } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const posts = await prisma.post.findMany({
-    orderBy: { publishedAt: "desc" },
-    select: { slug: true, updatedAt: true },
-  });
+  const [categories, posts] = await Promise.all([
+    getCategories(),
+    prisma.post.findMany({
+      where: liveWhere(), // drafts and scheduled posts are never listed
+      orderBy: { publishedAt: "desc" },
+      select: { slug: true, updatedAt: true },
+    }),
+  ]);
 
   return [
     { url: SITE_URL, changeFrequency: "daily", priority: 1 },
-    ...CATEGORIES.map((c) => ({ url: `${SITE_URL}${categoryHref(c)}`, changeFrequency: "daily" as const, priority: 0.6 })),
+    ...categories.map((c) => ({ url: `${SITE_URL}${categoryHref(c.name)}`, changeFrequency: "daily" as const, priority: 0.6 })),
     ...posts.map((p) => ({
       url: `${SITE_URL}/blog/${p.slug}`,
       lastModified: p.updatedAt,

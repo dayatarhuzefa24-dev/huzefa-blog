@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Source_Serif_4 } from "next/font/google";
 import Link from "next/link";
+import { connection } from "next/server";
 import "./globals.css";
 import SearchBox from "@/components/SearchBox";
+import SubscribeForm from "@/components/SubscribeForm";
+import { getCategories } from "@/lib/categories";
 import {
-  CATEGORIES,
   SITE_DESCRIPTION,
   SITE_NAME,
   SITE_URL,
@@ -13,8 +15,9 @@ import {
   formatToday,
 } from "@/lib/site";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+// Headlines and interface: Bricolage Grotesque. Article text: Source Serif 4.
+const display = Bricolage_Grotesque({ variable: "--font-display", subsets: ["latin"], display: "swap" });
+const body = Source_Serif_4({ variable: "--font-body", subsets: ["latin"], display: "swap" });
 
 const robots = {
   index: true,
@@ -42,75 +45,97 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", creator: SITE_NAME },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // The menu comes from the database, so render on every request (never bake it in at build time).
+  await connection();
+  const categories = await getCategories();
+
   return (
-    <html lang="en-IN" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en-IN" className={`${display.variable} ${body.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <div className="bg-zinc-900 text-xs text-zinc-300">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-1.5">
-            <span>{formatToday()}</span>
-            <Link href="/feed.xml" className="hover:text-white">RSS</Link>
+        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:bg-taxi focus:px-3 focus:py-2 focus:text-ink">
+          Skip to content
+        </a>
+
+        {/* Masthead */}
+        <div className="site-chrome bg-ink text-white">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-x-8 gap-y-4 px-4 pb-4 pt-5">
+            <div>
+              <p className="text-xs text-white/55">{formatToday()}</p>
+              <Link href="/" className="display mt-1 block text-[2rem] uppercase leading-none sm:text-5xl">
+                {SITE_NAME}
+              </Link>
+            </div>
+            <div className="flex w-full items-center gap-5 sm:w-auto">
+              <SearchBox />
+              <a href="#subscribe" className="hidden shrink-0 text-sm font-bold text-taxi hover:underline sm:block">Newsletter</a>
+            </div>
           </div>
         </div>
 
-        <header className="sticky top-0 z-30 border-b border-zinc-200 bg-white/95 backdrop-blur">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <Link href="/" className="text-2xl font-black uppercase tracking-tight">
-              {SITE_NAME}
-            </Link>
-            <SearchBox />
+        {/* Section bar: stays on screen while scrolling */}
+        <nav aria-label="Categories" className="site-chrome sticky top-0 z-30 border-b-[3px] border-taxi bg-ink text-white">
+          <ul className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-2 text-[0.95rem] font-semibold whitespace-nowrap">
+            <li><Link href="/" className="block px-3 py-3 hover:text-taxi">Home</Link></li>
+            {categories.map((c) => (
+              <li key={c.slug}>
+                <Link href={categoryHref(c.name)} className="block px-3 py-3 hover:text-taxi">{c.name}</Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <main id="main" className="flex-1">{children}</main>
+
+        <footer className="site-chrome mt-20 bg-ink text-white/80">
+          <div id="subscribe" className="border-b border-white/15">
+            <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 md:grid-cols-[1.2fr_1fr] md:items-end">
+              <div>
+                <h2 className="display text-3xl text-white sm:text-4xl">New stories, straight to your inbox.</h2>
+                <p className="mt-3 max-w-md font-[family-name:var(--font-body)] text-base text-white/65">
+                  Tech, AI, Mumbai property, the Sensex, games and Bollywood. No spam, and you can leave any time.
+                </p>
+              </div>
+              <SubscribeForm source="footer" tone="dark" />
+            </div>
           </div>
-          <nav aria-label="Categories" className="border-t border-zinc-100">
-            <ul className="mx-auto flex max-w-6xl gap-5 overflow-x-auto px-4 py-2 text-sm font-semibold whitespace-nowrap">
-              <li><Link href="/" className="hover:text-red-600">Home</Link></li>
-              {CATEGORIES.map((c) => (
-                <li key={c}>
-                  <Link href={categoryHref(c)} className="hover:text-red-600">{c}</Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </header>
 
-        <main className="flex-1">{children}</main>
-
-        <footer className="mt-16 bg-zinc-900 text-zinc-300">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3">
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-3">
             <div>
-              <p className="text-lg font-black uppercase text-white">{SITE_NAME}</p>
-              <p className="mt-2 text-sm">{SITE_DESCRIPTION}</p>
+              <p className="display text-xl uppercase text-white">{SITE_NAME}</p>
+              <p className="mt-3 max-w-xs text-sm leading-relaxed">{SITE_DESCRIPTION}</p>
             </div>
             <nav aria-label="Sections">
-              <p className="text-sm font-bold uppercase tracking-wide text-white">Sections</p>
-              <ul className="mt-3 space-y-1.5 text-sm">
-                {CATEGORIES.map((c) => (
-                  <li key={c}><Link href={categoryHref(c)} className="hover:text-white">{c}</Link></li>
+              <p className="text-sm font-bold text-white">Sections</p>
+              <ul className="mt-3 space-y-2 text-sm">
+                {categories.map((c) => (
+                  <li key={c.slug}><Link href={categoryHref(c.name)} className="hover:text-taxi">{c.name}</Link></li>
                 ))}
               </ul>
             </nav>
-            <div className="space-y-6">
+            <div className="space-y-8">
               <nav aria-label="Footer">
-                <p className="text-sm font-bold uppercase tracking-wide text-white">Company</p>
-                <ul className="mt-3 space-y-1.5 text-sm">
-                  <li><Link href="/privacy-policy" className="hover:text-white">Privacy Policy</Link></li>
-                  <li><Link href="/terms-of-service" className="hover:text-white">Terms of Service</Link></li>
-                  <li><Link href="/contact" className="hover:text-white">Contact Us</Link></li>
-                  <li><Link href="/feed.xml" className="hover:text-white">RSS feed</Link></li>
+                <p className="text-sm font-bold text-white">About the site</p>
+                <ul className="mt-3 space-y-2 text-sm">
+                  <li><Link href="/privacy-policy" className="hover:text-taxi">Privacy Policy</Link></li>
+                  <li><Link href="/terms-of-service" className="hover:text-taxi">Terms of Service</Link></li>
+                  <li><Link href="/contact" className="hover:text-taxi">Contact</Link></li>
+                  <li><Link href="/feed.xml" className="hover:text-taxi">RSS feed</Link></li>
                 </ul>
               </nav>
               <div>
-                <p className="text-sm font-bold uppercase tracking-wide text-white">Follow</p>
-                <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                <p className="text-sm font-bold text-white">Follow</p>
+                <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
                   {SOCIAL_LINKS.map((s) => (
                     <li key={s.label}>
-                      <a href={s.href} target="_blank" rel="noopener noreferrer me" className="hover:text-white">{s.label}</a>
+                      <a href={s.href} target="_blank" rel="noopener noreferrer me" className="hover:text-taxi">{s.label}</a>
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
           </div>
-          <div className="border-t border-zinc-800 py-4 text-center text-xs text-zinc-500">
+          <div className="border-t border-white/10 py-5 text-center text-xs text-white/45">
             © {new Date().getFullYear()} {SITE_NAME}. All rights reserved.
           </div>
         </footer>

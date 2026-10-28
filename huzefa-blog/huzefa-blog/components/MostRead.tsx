@@ -2,23 +2,23 @@ import Link from "next/link";
 import { formatCount } from "@/lib/site";
 import type { CardPost } from "./PostCard";
 
-/** Numbered "Most read" list, ranked by views. */
+/** Ranked list of the most-read stories (the numbers are a real ranking). */
 export default function MostRead({ posts }: { posts: CardPost[] }) {
   if (posts.length === 0) return null;
   return (
-    <section aria-labelledby="most-read-heading">
-      <h2 id="most-read-heading" className="border-b-2 border-red-600 pb-2 text-lg font-bold">
+    <section aria-labelledby="most-read-heading" className="bg-ink p-5 text-white">
+      <h2 id="most-read-heading" className="display text-2xl">
         Most read
       </h2>
-      <ol className="mt-3 divide-y divide-zinc-200">
+      <ol className="mt-4 divide-y divide-white/15">
         {posts.map((p, i) => (
-          <li key={p.slug} className="flex gap-3 py-3">
-            <span className="text-2xl font-black leading-none text-zinc-300">{i + 1}</span>
+          <li key={p.slug} className="group flex gap-4 py-3.5">
+            <span className="display w-7 shrink-0 text-3xl text-taxi" aria-hidden>{i + 1}</span>
             <div className="min-w-0">
-              <Link href={`/blog/${p.slug}`} className="line-clamp-3 text-sm font-semibold leading-snug hover:underline">
-                {p.title}
+              <Link href={`/blog/${p.slug}`} className="line-clamp-3 text-[0.95rem] font-semibold leading-snug">
+                <span className="group-hover:text-taxi">{p.title}</span>
               </Link>
-              <p className="mt-1 text-xs text-zinc-500">{formatCount(p.views)} views</p>
+              <p className="mt-1 text-xs text-white/60">{formatCount(p.views)} views</p>
             </div>
           </li>
         ))}

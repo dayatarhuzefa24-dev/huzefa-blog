@@ -8,11 +8,11 @@ export default function ShareBar({ url, title }: { url: string; title: string })
   const t = encodeURIComponent(title);
 
   const links = [
-    { label: "WhatsApp", href: `https://wa.me/?text=${t}%20${u}`, cls: "bg-green-600" },
-    { label: "X", href: `https://twitter.com/intent/tweet?text=${t}&url=${u}`, cls: "bg-zinc-900" },
-    { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${u}`, cls: "bg-blue-600" },
-    { label: "LinkedIn", href: `https://www.linkedin.com/sharing/share-offsite/?url=${u}`, cls: "bg-sky-700" },
-    { label: "Telegram", href: `https://t.me/share/url?url=${u}&text=${t}`, cls: "bg-sky-500" },
+    { label: "WhatsApp", href: `https://wa.me/?text=${t}%20${u}` },
+    { label: "X", href: `https://twitter.com/intent/tweet?text=${t}&url=${u}` },
+    { label: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${u}` },
+    { label: "LinkedIn", href: `https://www.linkedin.com/sharing/share-offsite/?url=${u}` },
+    { label: "Telegram", href: `https://t.me/share/url?url=${u}&text=${t}` },
   ];
 
   async function copy() {
@@ -25,26 +25,17 @@ export default function ShareBar({ url, title }: { url: string; title: string })
     }
   }
 
+  const btn = "border border-line px-3 py-1.5 text-xs font-semibold text-text hover:border-ink hover:bg-taxi hover:text-ink";
   return (
     <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Share this story">
-      <span className="text-sm font-medium text-zinc-600">Share</span>
+      <span className="mr-1 text-sm font-semibold text-muted">Share</span>
       {links.map((l) => (
-        <a
-          key={l.label}
-          href={l.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`rounded-full px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 ${l.cls}`}
-        >
+        <a key={l.label} href={l.href} target="_blank" rel="noopener noreferrer" className={btn}>
           {l.label}
         </a>
       ))}
-      <button
-        type="button"
-        onClick={copy}
-        className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:border-zinc-900"
-      >
-        {copied ? "Copied!" : "Copy link"}
+      <button type="button" onClick={copy} className={btn}>
+        {copied ? "Link copied" : "Copy link"}
       </button>
     </div>
   );
