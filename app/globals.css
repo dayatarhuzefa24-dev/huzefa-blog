@@ -1,0 +1,234 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/*
+  Design system — "Mumbai evening edition".
+  Black ink + kaali-peeli taxi yellow. Yellow is used like a highlighter pen, never as a background wash.
+*/
+
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --soft: #eceef2;
+  --text: #101114;
+  --muted: #5b616e;
+  --line: #dfe2e8;
+  --ink: #101114;
+  --taxi: #f6c21a;
+  --signal: #d92b3a;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.force-light) {
+    --bg: #0c0d10;
+    --surface: #15171c;
+    --soft: #1d2026;
+    --text: #eceef1;
+    --muted: #a0a6b2;
+    --line: #2a2d35;
+    --ink: #000000;
+    --signal: #ff5a68;
+    color-scheme: dark;
+  }
+}
+
+/* The admin area is always light, whatever the visitor's device prefers. */
+.force-light {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --soft: #eceef2;
+  --text: #101114;
+  --muted: #5b616e;
+  --line: #dfe2e8;
+  --ink: #101114;
+  --signal: #d92b3a;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-soft: var(--soft);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-taxi: var(--taxi);
+  --color-signal: var(--signal);
+  --font-sans: var(--font-display), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-body), Georgia, "Times New Roman", serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-display), system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+:focus-visible {
+  outline: 3px solid var(--taxi);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--taxi);
+  color: #101114;
+}
+
+/* The signature interaction: a highlighter stroke slides under a headline you hover. */
+.hl {
+  background-image: linear-gradient(var(--taxi), var(--taxi));
+  background-repeat: no-repeat;
+  background-position: 0 92%;
+  background-size: 0% 0.38em;
+  transition: background-size 0.25s ease;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.group:hover .hl,
+a.hl:hover,
+a:focus-visible .hl,
+.hl:focus-visible {
+  background-size: 100% 0.38em;
+}
+/* A headline that is always highlighted (current page, active item). */
+.hl-on {
+  background-size: 100% 0.38em;
+}
+/* Headlines on a black block need the highlighter behind white text. */
+.hl-ink {
+  background-image: linear-gradient(var(--taxi), var(--taxi));
+}
+
+/* Display headline type. */
+.display {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+/* ───────── Article reading column ───────── */
+.article {
+  --tw-prose-body: var(--text);
+  --tw-prose-headings: var(--text);
+  --tw-prose-lead: var(--muted);
+  --tw-prose-links: var(--text);
+  --tw-prose-bold: var(--text);
+  --tw-prose-counters: var(--muted);
+  --tw-prose-bullets: var(--taxi);
+  --tw-prose-hr: var(--line);
+  --tw-prose-quotes: var(--text);
+  --tw-prose-quote-borders: var(--taxi);
+  --tw-prose-captions: var(--muted);
+  --tw-prose-code: var(--text);
+  --tw-prose-pre-code: #eceef1;
+  --tw-prose-pre-bg: #15171c;
+  --tw-prose-th-borders: var(--line);
+  --tw-prose-td-borders: var(--line);
+  font-family: var(--font-body), Georgia, serif;
+  font-size: 1.1875rem;
+  line-height: 1.78;
+  max-width: 40rem;
+}
+@media (min-width: 1024px) {
+  .article {
+    font-size: 1.25rem;
+  }
+}
+.article h2,
+.article h3,
+.article h4 {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+.article h2 {
+  font-size: 1.75em;
+  margin-top: 2.2em;
+}
+.article a {
+  text-decoration: none;
+  background-image: linear-gradient(var(--taxi), var(--taxi));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 0.28em;
+  font-weight: 500;
+  transition: background-size 0.2s ease;
+}
+.article a:hover {
+  background-size: 100% 100%;
+  color: #101114;
+}
+.article blockquote {
+  font-style: normal;
+  font-weight: 500;
+  border-left-width: 5px;
+  padding-left: 1.1em;
+}
+.article blockquote p::before,
+.article blockquote p::after {
+  content: none;
+}
+.article img {
+  border-radius: 3px;
+}
+.article figure {
+  margin: 2em 0;
+}
+.article figcaption {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  border-left: 3px solid var(--taxi);
+  padding-left: 0.7em;
+  margin-top: 0.7em;
+}
+/* Short static pages (privacy, terms…) */
+.page-prose {
+  --tw-prose-body: var(--text);
+  --tw-prose-headings: var(--text);
+  --tw-prose-links: var(--text);
+  --tw-prose-bold: var(--text);
+  --tw-prose-bullets: var(--taxi);
+  --tw-prose-hr: var(--line);
+  --tw-prose-quotes: var(--text);
+  --tw-prose-quote-borders: var(--taxi);
+  font-family: var(--font-body), Georgia, serif;
+}
+.page-prose h2,
+.page-prose h3 {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.page-prose a {
+  text-decoration: underline;
+  text-decoration-color: var(--taxi);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+}
+
+/* The admin area has its own menu: hide the public masthead, section bar and footer there. */
+body:has(.admin-root) .site-chrome {
+  display: none;
+}
